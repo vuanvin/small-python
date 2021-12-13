@@ -10,7 +10,7 @@ typedef struct _strobject {
   char value[50];
 } PyStringObject;
 
-PyTypeObject PyString_Type;
-PyObject *PyStr_Create(const char* value);
+PyAPI_DATA(PyTypeObject) PyString_Type;
+PyAPI_FUNC(PyObject*) PyStr_Create(const char* value);
 
 #endif /* Py_STROBJECT_H */

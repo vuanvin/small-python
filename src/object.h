@@ -1,6 +1,8 @@
 #ifndef Py_OBJECT_H
 #define Py_OBJECT_H
 
+#include "pyport.h"
+
 typedef int Py_ssize_t;
 typedef Py_ssize_t Py_hash_t;
 typedef struct _typeobject PyTypeObject;
@@ -86,15 +88,11 @@ typedef struct _typeobject {
   destructor tp_dealloc;
 } PyTypeObject;
 
-PyTypeObject PyType_Type;
-
+PyAPI_DATA(PyTypeObject) PyType_Type;
 
 #define Py_INCREF(op) _Py_INCREF(_PyObject_CAST(op))
 
-void _Py_Dealloc(PyObject *op) {
-    destructor dealloc = Py_TYPE(op)->tp_dealloc;
-    (*dealloc)(op);
-}
+void _Py_Dealloc(PyObject *op);
 
 static inline void _Py_DECREF(PyObject *op) {
   if (--op->ob_refcnt == 0) {

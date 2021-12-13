@@ -16,6 +16,10 @@ PyObject *PyStr_Create(const char* value) {
   return (PyObject*) object;
 }
 
+static PyObject* str_repr(PyStringObject *object) {
+    return (PyObject*) object;
+}
+
 static Py_hash_t str_hash(PyObject* object) {
     PyStringObject *strObject = (PyStringObject*) object;
     register int len;
@@ -62,7 +66,7 @@ PyTypeObject PyString_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
   .tp_name = "str",
   .tp_as_number = &str_as_number,
-  .tp_hash = str_hash,
-  .tp_repr = 0,
+  .tp_hash = (hashfunc)str_hash,
+  .tp_repr = (reprfunc)str_repr,
   .tp_new = 0
 };

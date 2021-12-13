@@ -1,11 +1,8 @@
 #include "Python.h"
+#include <utility>
 #include <string>
 #include <map>
 
-typedef struct _dictobject {
-  PyObject_HEAD
-  std::map<PyObject*, PyObject*> dict;
-} PyDictObject;
 
 PyObject* PyDict_Create() {
     PyDictObject *object = new PyDictObject;
@@ -18,10 +15,18 @@ static Py_hash_t dict_hash(PyObject* object) {
     return 100;
 }
 
-static PyObject* dict_add(PyObject* left, PyObject* right) {
-    PyDictObject *leftStr = (PyDictObject*) left;
-    PyDictObject *rightStr = (PyDictObject*) right;
+static PyObject* dict_add(PyDictObject* left, PyDictObject* right) {
     PyDictObject *result = (PyDictObject*) PyDict_Create();
+
+    for (auto& item : left->dict) {
+        auto m = Py_TYPE(result)->tp_as_mapping;
+        m->mp_ass_subscript((PyObject*) result, item.first, item.second);
+    }
+
+    for (auto& item : right->dict) {
+        auto m = Py_TYPE(result)->tp_as_mapping;
+        m->mp_ass_subscript((PyObject*) result, item.first, item.second);
+    }
 
     return (PyObject*)result;
 }
@@ -49,7 +54,21 @@ int PyDict_DelItem(PyObject *op, PyObject *key) {
 int PyDict_SetItem(PyObject *op, PyObject *key, PyObject *value) {
     PyDictObject *mp;
     mp = (PyDictObject *)op;
-    mp->dict.emplace(key, value);
+    for (auto & item : mp->dict) {
+        auto k = item.first;
+        // 暂时使用Hash值判断是否相等，但这是不安全的。
+        if (Py_TYPE(k) == Py_TYPE(key)) {
+            auto t = Py_TYPE(k);
+            if(t->tp_hash(k) == t->tp_hash(key)) {
+                mp->dict[k] = value;
+                key == nullptr;
+            }
+        }
+    }
+
+    if (key)
+        mp->dict[key] = value;
+
     return 1;
 }
 
@@ -93,8 +112,8 @@ static PyObject* dict_repr(PyDictObject *object) {
         str += " : ";
         str += valueStr->value;
     }
-
     str += "}\n";
+
     PyObject *result = PyStr_Create(str.c_str());
     return result;
 }
@@ -103,7 +122,8 @@ PyTypeObject PyDict_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
   .tp_name = "dict",
   .tp_as_number = &dict_as_number,
+  .tp_as_mapping = &dict_as_mapping,
   .tp_hash = dict_hash,
-  .tp_repr = dict_repr,
+  .tp_repr = (reprfunc) dict_repr,
   .tp_new = 0
 };

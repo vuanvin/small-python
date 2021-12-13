@@ -15,7 +15,7 @@ static PyObject* int_repr(PyObject* _object) {
   std::string str = std::to_string(object->ob_digit[0]);
   PyObject *result = PyStr_Create(str.c_str());
 
-  return (PyObject*) object;
+  return (PyObject*) result;
 }
 
 
