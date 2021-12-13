@@ -8,4 +8,4 @@ all:
 	$(CXX) $(CXXFLAG) $(SOURCE_FILES) -o python
 
 clean:
-	rm -rf src/*.o src/python
+	rm -rf src/*.o python
